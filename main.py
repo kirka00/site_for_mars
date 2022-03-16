@@ -49,7 +49,7 @@ class JobsForm(FlaskForm):
 @app.route("/")
 def index():
     db_sess = db_session.create_session()
-    jobs = db_sess.query(Jobs).filter(Jobs.is_finished != True)
+    jobs = db_sess.query(Jobs)
     return render_template("index.html", title='Work log', jobs=jobs)
 
 
