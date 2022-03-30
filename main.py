@@ -6,9 +6,8 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, EmailField, IntegerField
 from wtforms.validators import DataRequired
 from data import db_session, jobs_api
-from flask_restful import reqparse, abort, Api, Resource
-from datetime import datetime
-
+from flask_restful import abort, Api
+import users_resources
 
 app = Flask(__name__)
 api = Api(app)
@@ -42,19 +41,19 @@ class JobsForm(FlaskForm):
     team_leader = IntegerField("Team leader (id)")
     work_size = IntegerField("Work Size")
     collaborators  = IntegerField("Collaborators ")
-    is_finished = BooleanField("Is job finished&")
+    is_finished = BooleanField("Is job finished")
     submit = SubmitField('Применить')
 
 
 @app.route("/")
 def index():
     db_sess = db_session.create_session()
-    jobs = db_sess.query(Jobs).filter(Jobs.is_finished != True)
+    jobs = db_sess.query(Jobs)
     return render_template("index.html", title='Work log', jobs=jobs)
 
 
 @app.route('/register', methods=['GET', 'POST'])
-def reqister():
+def register():
     form = RegisterForm()
     if form.validate_on_submit():
         if form.hashed_password.data != form.password_again.data:
@@ -190,8 +189,8 @@ def jobs_delete(id):
 def main():
     db_session.global_init("db/mars.db")
     app.register_blueprint(jobs_api.blueprint)
-    
-   
+    api.add_resource(users_resources.UsersListResource, '/api/v2/users') 
+    api.add_resource(users_resources.UsersResource, '/api/v2/users/<int:user_id>')
     app.run(debug=True)
 
 
