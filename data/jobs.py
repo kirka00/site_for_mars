@@ -16,7 +16,7 @@ class Jobs(SqlAlchemyBase, SerializerMixin):
     job = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     work_size = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
     collaborators = sqlalchemy.Column(sqlalchemy.Integer,
-                                      sqlalchemy.ForeignKey("jobs.id"))
+                                      sqlalchemy.ForeignKey("users.id"))
     start_date = sqlalchemy.Column(sqlalchemy.DateTime,
                                    default=datetime.datetime.now)
     end_date = sqlalchemy.Column(sqlalchemy.DateTime,

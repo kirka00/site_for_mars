@@ -1,19 +1,20 @@
 from flask_restful import Resource
 from data import db_session
-from flask import jsonify
+from flask import jsonify, abort
 from data.users import User
 from parser_file import parser
 
 
 class UsersResource(Resource):
     def get(self, user_id):
+        abort_if_user_not_found(user_id)
         session = db_session.create_session()
-        user = session.query(User).all()
+        user = session.query(User).get(user_id)
         return jsonify({'user': [item.to_dict(
             only=('surname', 'name', 'age', 'position', 'speciality', 'address',
                   'email', 'hashed_password')) for item in user]})
 
-    def add_user(self):
+    def delete(self):
         args = parser.parse_args()
         session = db_session.create_session()
         user = User(
@@ -39,7 +40,7 @@ class UsersListResource(Resource):
             only=('surname', 'name', 'age', 'position', 'speciality', 'address',
                   'email', 'hashed_password')) for item in user]})
 
-    def add_user(self):
+    def post(self):
         args = parser.parse_args()
         session = db_session.create_session()
         user = User(
@@ -56,3 +57,11 @@ class UsersListResource(Resource):
         session.add(user)
         session.commit()
         return jsonify({'success': 'OK'})
+
+
+
+def abort_if_user_not_found(user_id):
+    session = db_session.create_session()
+    news = session.query(User).get(user_id)
+    if not news:
+        abort(404, message=f"News {user_id} not found")

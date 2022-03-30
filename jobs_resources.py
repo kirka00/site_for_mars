@@ -1,19 +1,20 @@
 from flask_restful import Resource
 from data import db_session
-from flask import jsonify
+from flask import jsonify, abort
 from data.jobs import Jobs
 from parser_file import parser
 
 
-class JobssResource(Resource):
+class JobsResource(Resource):
     def get(self, job_id):
+        abort_if_job_not_found(job_id)
         session = db_session.create_session()
-        job = session.query(Jobs).all()
+        job = session.query(Jobs).get(job_id)
         return jsonify({'job': [item.to_dict(
             only=('team_leader', 'job', 'work_size',
                   'collaborators', 'is_finished')) for item in job]})
 
-    def add_job(self):
+    def delete(self):
         args = parser.parse_args()
         session = db_session.create_session()
         job = Jobs(
@@ -36,7 +37,7 @@ class JobsListResource(Resource):
             only=('team_leader', 'job', 'work_size',
                   'collaborators', 'is_finished')) for item in job]})
 
-    def add_job(self):
+    def post(self):
         args = parser.parse_args()
         session = db_session.create_session()
         job = Jobs(
@@ -50,3 +51,10 @@ class JobsListResource(Resource):
         session.add(job)
         session.commit()
         return jsonify({'success': 'OK'})
+
+
+def abort_if_job_not_found(job_id):
+    session = db_session.create_session()
+    news = session.query(Jobs).get(job_id)
+    if not news:
+        abort(404, message=f"News {job_id} not found")
