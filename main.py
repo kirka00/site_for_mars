@@ -8,6 +8,8 @@ from wtforms.validators import DataRequired
 from data import db_session, jobs_api
 from flask_restful import abort, Api
 import users_resources
+import jobs_resources
+
 
 app = Flask(__name__)
 api = Api(app)
@@ -19,7 +21,8 @@ login_manager.init_app(app)
 class RegisterForm(FlaskForm):
     email = EmailField('Login / email', validators=[DataRequired()])
     hashed_password = PasswordField('Password', validators=[DataRequired()])
-    password_again = PasswordField('Repeat password', validators=[DataRequired()])
+    password_again = PasswordField(
+        'Repeat password', validators=[DataRequired()])
     surname = StringField('Surname', validators=[DataRequired()])
     name = StringField('Name', validators=[DataRequired()])
     age = IntegerField('Age', validators=[DataRequired()])
@@ -40,7 +43,7 @@ class JobsForm(FlaskForm):
     title = StringField('Job Title', validators=[DataRequired()])
     team_leader = IntegerField("Team leader (id)")
     work_size = IntegerField("Work Size")
-    collaborators  = IntegerField("Collaborators ")
+    collaborators = IntegerField("Collaborators ")
     is_finished = BooleanField("Is job finished")
     submit = SubmitField('Применить')
 
@@ -124,6 +127,7 @@ def add_jobs():
     return render_template('jobs.html', title='Добавление работы',
                            form=form)
 
+
 @app.route('/jobs/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_jobs(id):
@@ -133,8 +137,8 @@ def edit_jobs(id):
         users = db_sess.query(User).filter(User.id == 1)
         if users:
             jobs = db_sess.query(Jobs).filter(Jobs.id == id,
-                                            Jobs.user == current_user
-                                            )
+                                              Jobs.user == current_user
+                                              )
         if jobs:
             jobs.title = form.title.data
             jobs.title = form.title.data
@@ -149,8 +153,8 @@ def edit_jobs(id):
         users = db_sess.query(User).filter(User.id == 1)
         if users:
             jobs = db_sess.query(Jobs).filter(Jobs.id == id,
-                                            Jobs.user == current_user
-                                            )
+                                              Jobs.user == current_user
+                                              )
         if jobs:
             jobs.title = form.title.data
             jobs.title = form.title.data
@@ -176,8 +180,8 @@ def jobs_delete(id):
     users = db_sess.query(User).filter(User.id == 1)
     if users:
         jobs = db_sess.query(Jobs).filter(Jobs.id == id,
-                                        Jobs.user == current_user
-                                        )
+                                          Jobs.user == current_user
+                                          )
     if jobs:
         db_sess.delete(jobs)
         db_sess.commit()
@@ -189,8 +193,12 @@ def jobs_delete(id):
 def main():
     db_session.global_init("db/mars.db")
     app.register_blueprint(jobs_api.blueprint)
-    api.add_resource(users_resources.UsersListResource, '/api/v2/users') 
-    api.add_resource(users_resources.UsersResource, '/api/v2/users/<int:user_id>')
+    api.add_resource(users_resources.UsersListResource, '/api/v2/users')
+    api.add_resource(users_resources.UsersResource,
+                     '/api/v2/jobs/<int:user_id>')
+
+    api.add_resource(jobs_resources.JobsListResource, '/api/v2/jobs')
+    api.add_resource(jobs_resources.JobsResource, '/api/v2/jobs/<int:job_id>')
     app.run(debug=True)
 
 
