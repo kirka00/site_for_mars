@@ -10,21 +10,15 @@ class JobsResource(Resource):
         abort_if_job_not_found(job_id)
         session = db_session.create_session()
         job = session.query(Jobs).get(job_id)
-        return jsonify({'job': [item.to_dict(
+        return jsonify({'job': job.to_dict(
             only=('team_leader', 'job', 'work_size',
-                  'collaborators', 'is_finished')) for item in job]})
+                  'collaborators', 'is_finished'))})
 
-    def delete(self):
-        args = parser.parse_args()
+    def delete(self, job_id):
+        abort_if_job_not_found(job_id)
         session = db_session.create_session()
-        job = Jobs(
-            team_leader=args['team_leader'],
-            job=args['job'],
-            work_size=args['work_size'],
-            collaborators=args['collaborators'],
-            is_finished=args['is_finished']
-        )
-        session.add(job)
+        jobs = session.query(Jobs).get(job_id)
+        session.delete(jobs)
         session.commit()
         return jsonify({'success': 'OK'})
 
@@ -55,6 +49,6 @@ class JobsListResource(Resource):
 
 def abort_if_job_not_found(job_id):
     session = db_session.create_session()
-    news = session.query(Jobs).get(job_id)
-    if not news:
-        abort(404, message=f"News {job_id} not found")
+    job = session.query(Jobs).get(job_id)
+    if not job:
+        abort(404, message=f"Job {job_id} not found")
